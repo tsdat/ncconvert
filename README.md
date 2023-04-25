@@ -8,10 +8,10 @@ Coming soon...
 
 ## Developing
 
-Create a python environment using at least python 3.8, then install the development requirements:
+Create a python environment using at least python 3.8, then install the requirements:
 
 ```shell
-pip install requirements-dev.txt
+pip install ".[dev,cli]"
 ```
 
 Run `make coverage` to generate a report of test coverage.

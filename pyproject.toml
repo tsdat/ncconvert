@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ncconvert"
-dynamic = ["dependencies", "version"]
+dynamic = ["version"]
 authors = [
   { name="tsdat", email="tsdat@pnnl.gov" },
 ]
@@ -15,6 +15,24 @@ keywords = ["netCDF", "cdf", "nc"]
 license = {text = "BSD 3-Clause License"}
 classifiers = [
     "Programming Language :: Python :: 3",
+]
+dependencies = [
+  "xarray[io]",
+  "pandas",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "coverage",
+  "build",
+  "black",
+  "ruff",
+]
+
+cli = [
+  "typer",
+  "rich",
 ]
 
 [tool.setuptools]
@@ -31,5 +49,4 @@ local_scheme = "no-local-version"
 write_to = "src/ncconvert/_version.py"
 
 [tool.setuptools.dynamic]
-dependencies= {file = "requirements.txt"}
 version = {attr = "ncconvert.__version__"}

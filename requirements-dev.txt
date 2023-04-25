@@ -1,8 +1,0 @@
-pytest
-jupyter
-ipykernel
-coverage
-setuptools_scm
-build
-black
-ruff

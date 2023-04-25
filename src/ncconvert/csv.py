@@ -1,18 +1,36 @@
-import pandas as pd
+from __future__ import annotations
+
 import xarray as xr
-from typing import Optional, List, Dict, Any, Hashable
+from typing import Dict, Any
 
-import warnings
 
+import json
 from pathlib import Path
 
 
-def to_csv(
+# Uses vanilla xarray and pandas settings to convert xarray to csv
+# The csv will be indexed by the cartesian product of the dataset's
+# indexes (coordinate variables). Returns path to the output file and
+# the path to the metadata file
+def to_vanilla_csv(
     dataset: xr.Dataset,
     filepath: str | Path,
     to_csv_kwargs: Dict[str, Any] | None = None,
-):
-    ...
+) -> tuple[Path, Path]:
+    if to_csv_kwargs is None:
+        to_csv_kwargs = {}
+
+    Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+
+    df = dataset.to_dataframe(dim_order=list(dataset.dims))
+    df.to_csv(filepath, **to_csv_kwargs)  # type: ignore
+    metadata = dataset.to_dict(data=False, encoding=True)
+
+    metadata_json = json.dumps(metadata, indent=4)
+    metadata_path = Path(filepath).with_suffix(".json")
+    metadata_path.write_text(metadata_json)
+
+    return Path(filepath), metadata_path
 
 
 # class CSVWriter:

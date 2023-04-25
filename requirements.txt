@@ -1,0 +1,3 @@
+xarray[io]
+pandas
+typer

@@ -1,0 +1,14 @@
+.venv
+env
+
+dist
+*.egg-info
+build
+__pycache__
+
+htmlcov
+.coverage
+
+.vscode
+
+_version.py

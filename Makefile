@@ -1,3 +1,4 @@
+.PHONY: build
 build:
 	rm -rf dist/
 	python -m build
@@ -9,5 +10,5 @@ coverage:
 	open htmlcov/index.html
 
 format:
-	ruff . --fix --ignore E501
+	ruff . --fix --ignore E501 --per-file-ignores="__init__.py:F401"
 	black .

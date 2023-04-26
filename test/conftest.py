@@ -44,6 +44,7 @@ def dataset() -> xr.Dataset:
                 [1, 2, 3, 4],
                 {"units": "1", "_FillValue": -9999.0},
             ),
+            "static": 1.5,
         },
         attrs={
             "datastream": "humboldt.buoy.c1",

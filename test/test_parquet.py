@@ -37,8 +37,9 @@ def test_parquet_collection(dataset: xr.Dataset):
 
     output_paths, metadata_path = to_parquet_collection(dataset, filepath)
 
-    assert len(output_paths) == 3
+    assert len(output_paths) == 4
     assert filepath.with_suffix(".height.parquet") in output_paths
+    assert filepath.with_suffix(".parquet") in output_paths
     assert filepath.with_suffix(".time.parquet") in output_paths
     assert filepath.with_suffix(".time.height.parquet") in output_paths
     assert metadata_path == filepath.with_suffix(".json")
@@ -47,11 +48,15 @@ def test_parquet_collection(dataset: xr.Dataset):
     assert len(h_df.index) == len(dataset.height)
     assert list(h_df.columns) == ["other"]
 
-    th_df = pd.read_parquet(sorted(output_paths)[1])  # type: ignore
+    df = pd.read_parquet(sorted(output_paths)[1])  # type: ignore
+    assert len(df.index) == 1
+    assert list(df.columns) == ["static"]
+
+    th_df = pd.read_parquet(sorted(output_paths)[2])  # type: ignore
     assert len(th_df.index) == len(dataset.time) * len(dataset.height)
     assert list(th_df.columns) == ["temperature"]
 
-    t_df = pd.read_parquet(sorted(output_paths)[2])  # type: ignore
+    t_df = pd.read_parquet(sorted(output_paths)[3])  # type: ignore
     assert len(t_df.index) == len(dataset.time)
     assert list(t_df.columns) == ["humidity"]
 

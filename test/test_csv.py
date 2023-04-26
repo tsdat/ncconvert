@@ -37,21 +37,26 @@ def test_csv_collection(dataset: xr.Dataset):
 
     output_paths, metadata_path = to_csv_collection(dataset, filepath)
 
-    assert len(output_paths) == 3
+    assert len(output_paths) == 4
+    assert filepath.with_suffix(".csv") in output_paths
     assert filepath.with_suffix(".height.csv") in output_paths
     assert filepath.with_suffix(".time.csv") in output_paths
     assert filepath.with_suffix(".time.height.csv") in output_paths
     assert metadata_path == filepath.with_suffix(".json")
 
-    h_df = pd.read_csv(sorted(output_paths)[0])  # type: ignore
+    df = pd.read_csv(sorted(output_paths)[0])  # type: ignore
+    assert len(df.index) == 1
+    assert "static" in list(df.columns)  # may also have 'Unnamed: 0' column
+
+    h_df = pd.read_csv(sorted(output_paths)[1])  # type: ignore
     assert len(h_df.index) == len(dataset.height)
     assert list(h_df.columns) == ["height", "other"]
 
-    t_df = pd.read_csv(sorted(output_paths)[1])  # type: ignore
+    t_df = pd.read_csv(sorted(output_paths)[2])  # type: ignore
     assert len(t_df.index) == len(dataset.time)
     assert list(t_df.columns) == ["time", "humidity"]
 
-    th_df = pd.read_csv(sorted(output_paths)[2])  # type: ignore
+    th_df = pd.read_csv(sorted(output_paths)[3])  # type: ignore
     assert len(th_df.index) == len(dataset.time) * len(dataset.height)
     assert list(th_df.columns) == ["time", "height", "temperature"]
 

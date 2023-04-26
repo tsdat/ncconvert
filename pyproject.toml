@@ -18,7 +18,7 @@ classifiers = [
 ]
 dependencies = [
   "xarray[io]",
-  "pandas",
+  "pandas[hdf5, parquet, feather, spss, excel]",
 ]
 
 [project.optional-dependencies]

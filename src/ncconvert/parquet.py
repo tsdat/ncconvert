@@ -7,12 +7,12 @@ import xarray as xr
 from .utils import _to_dataframe_collection, _to_dataframe, _dump_metadata
 
 
-def to_csv(
+def to_parquet(
     dataset: xr.Dataset,
     filepath: str | Path,
-    to_csv_kwargs: Dict[str, Any] | None = None,
+    to_parquet_kwargs: Dict[str, Any] | None = None,
 ) -> tuple[Path, Path]:
-    """Writes an xarray dataset to a csv file using basic settings.
+    """Writes an xarray dataset to a parquet file using basic settings.
 
     The output file will be indexed by the cartesian product of the dataset's indexes
     (coordinate variables).
@@ -21,32 +21,32 @@ def to_csv(
         dataset (xr.Dataset): The dataset to write.
         filepath (str | Path): Where to write the file. This should be the path to a
             file, not the path to a folder. This should include the file extension.
-        to_csv_kwargs (Dict[str, Any] | None, optional): Extra arguments to provide to
-            pandas.DataFrame.to_csv() as keyword arguments. Defaults to None.
+        to_parquet_kwargs (Dict[str, Any] | None, optional): Extra arguments to provide
+            to pandas.DataFrame.to_parquet() as keyword arguments. Defaults to None.
 
     Returns:
-        tuple[Path, Path]: The path to the written csv file and associated metadata
+        tuple[Path, Path]: The path to the written parquet file and associated metadata
             file.
     """
-    if to_csv_kwargs is None:
-        to_csv_kwargs = {}
+    if to_parquet_kwargs is None:
+        to_parquet_kwargs = {}
 
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
     filepath, df = _to_dataframe(dataset, filepath)
-    df.to_csv(filepath, **to_csv_kwargs)  # type: ignore
+    df.to_parquet(filepath, **to_parquet_kwargs)  # type: ignore
 
     metadata_path = _dump_metadata(dataset, filepath)
 
     return Path(filepath), metadata_path
 
 
-def to_csv_collection(
+def to_parquet_collection(
     dataset: xr.Dataset,
     filepath: str | Path,
-    to_csv_kwargs: Dict[str, Any] | None = None,
+    to_parquet_kwargs: Dict[str, Any] | None = None,
 ) -> tuple[tuple[Path, ...], Path]:
-    """Writes an xarray dataset to a collection of csv files.
+    """Writes an xarray dataset to a collection of parquet files.
 
     Output files are split such that each file contains the cartesian product of each
     unique pairing of coordinate dimensions.
@@ -62,23 +62,23 @@ def to_csv_collection(
         filepath (str | Path): The base path for where to write the files. This should
             be the path to a file, not the path to a folder. This does not need to
             include a file extension; one will be added if not provided.
-        to_csv_kwargs (Dict[str, Any] | None, optional): Extra arguments to provide to
-            pandas.DataFrame.to_csv() as keyword arguments. Defaults to None.
+        to_parquet_kwargs (Dict[str, Any] | None, optional): Extra arguments to provide
+            to pandas.DataFrame.to_parquet() as keyword arguments. Defaults to None.
 
     Returns:
-        tuple[tuple[Path, ...], Path]: The paths to the written csv files and associated
-            metadata file.
+        tuple[tuple[Path, ...], Path]: The paths to the written parquet files and
+            associated metadata file.
     """
-    if to_csv_kwargs is None:
-        to_csv_kwargs = {}
+    if to_parquet_kwargs is None:
+        to_parquet_kwargs = {}
 
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-    data_groups = _to_dataframe_collection(dataset, filepath, ".csv")
+    data_groups = _to_dataframe_collection(dataset, filepath, ".parquet")
 
     filepaths = []
     for fpath, df in data_groups:
-        df.to_csv(fpath, **to_csv_kwargs)
+        df.to_parquet(fpath, **to_parquet_kwargs)
         filepaths.append(fpath)
 
     metadata_path = _dump_metadata(dataset, filepath)

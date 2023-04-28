@@ -11,4 +11,5 @@ coverage:
 
 format:
 	ruff . --fix --ignore E501 --per-file-ignores="__init__.py:F401"
+	isort .
 	black .

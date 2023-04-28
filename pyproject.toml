@@ -28,12 +28,17 @@ dev = [
   "build",
   "black",
   "ruff",
+  "isort",
 ]
 
 cli = [
   "typer",
+  "tqdm",
   "rich",
 ]
+
+[project.scripts]
+ncconvert = "ncconvert.cli:app"
 
 [tool.setuptools]
 include-package-data = true
@@ -49,4 +54,4 @@ local_scheme = "no-local-version"
 write_to = "src/ncconvert/_version.py"
 
 [tool.setuptools.dynamic]
-version = {attr = "ncconvert.__version__"}
+version = {attr = "ncconvert._version.__version__"}

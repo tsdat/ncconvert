@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Any, Dict
 
 import xarray as xr
-from .utils import _to_dataframe_collection, _to_dataframe, _dump_metadata
+
+from .utils import _dump_metadata, _to_dataframe, _to_dataframe_collection
 
 
 def to_parquet(
@@ -33,7 +34,7 @@ def to_parquet(
 
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-    filepath, df = _to_dataframe(dataset, filepath)
+    filepath, df = _to_dataframe(dataset, filepath, ".parquet")
     df.to_parquet(filepath, **to_parquet_kwargs)  # type: ignore
 
     metadata_path = _dump_metadata(dataset, filepath)

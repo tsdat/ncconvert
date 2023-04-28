@@ -1,27 +1,30 @@
 from __future__ import annotations
 
-from collections import defaultdict
 import json
+from collections import defaultdict
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
 import xarray as xr
 
 
 def _dump_metadata(dataset: xr.Dataset, filepath: str | Path) -> Path:
     metadata = dataset.to_dict(data=False, encoding=True)
-    metadata_json = json.dumps(metadata, indent=4)
+    metadata_json = json.dumps(metadata, default=str, indent=4)
     metadata_path = Path(filepath).with_suffix(".json")
     metadata_path.write_text(metadata_json)
     return metadata_path
 
 
 def _to_dataframe(
-    dataset: xr.Dataset, filepath: str | Path
+    dataset: xr.Dataset, filepath: str | Path, extension: str
 ) -> tuple[Path, pd.DataFrame]:
+    if not extension.startswith("."):
+        extension = "." + extension
+
     df = dataset.to_dataframe(dim_order=list(dataset.dims))
 
-    return Path(filepath), df
+    return Path(filepath).with_suffix(extension), df
 
 
 def _to_dataframe_collection(

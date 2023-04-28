@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Any, Dict
 
 import xarray as xr
-from .utils import _to_dataframe_collection, _to_dataframe, _dump_metadata
+
+from .utils import _dump_metadata, _to_dataframe, _to_dataframe_collection
 
 
 def to_csv(
@@ -33,7 +34,7 @@ def to_csv(
 
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-    filepath, df = _to_dataframe(dataset, filepath)
+    filepath, df = _to_dataframe(dataset, filepath, ".csv")
     df.to_csv(filepath, **to_csv_kwargs)  # type: ignore
 
     metadata_path = _dump_metadata(dataset, filepath)
@@ -84,3 +85,9 @@ def to_csv_collection(
     metadata_path = _dump_metadata(dataset, filepath)
 
     return tuple(filepaths), metadata_path
+
+
+def to_timestream_csv():
+    ...
+
+    # tuple(filepaths), metadata_path

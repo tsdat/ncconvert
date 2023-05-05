@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import xarray as xr
 
@@ -11,8 +11,9 @@ from .utils import _dump_metadata, _to_dataframe, _to_dataframe_collection
 def to_csv(
     dataset: xr.Dataset,
     filepath: str | Path,
-    to_csv_kwargs: Dict[str, Any] | None = None,
-) -> tuple[Path, Path]:
+    metadata: bool = True,
+    **kwargs: Any,
+) -> tuple[Path, Path | None]:
     """Writes an xarray dataset to a csv file using basic settings.
 
     The output file will be indexed by the cartesian product of the dataset's indexes
@@ -22,22 +23,23 @@ def to_csv(
         dataset (xr.Dataset): The dataset to write.
         filepath (str | Path): Where to write the file. This should be the path to a
             file, not the path to a folder. This should include the file extension.
+        metadata (bool): If True, metadata from the xr.Dataset will be written to a
+            .json file next to the output file. Defaults to True.
         to_csv_kwargs (Dict[str, Any] | None, optional): Extra arguments to provide to
             pandas.DataFrame.to_csv() as keyword arguments. Defaults to None.
 
     Returns:
-        tuple[Path, Path]: The path to the written csv file and associated metadata
-            file.
+        tuple[Path, Path | None]: The path to the written csv file and associated
+            metadata file.
     """
-    if to_csv_kwargs is None:
-        to_csv_kwargs = {}
+    to_csv_kwargs = kwargs.get("to_csv_kwargs", {})
 
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
     filepath, df = _to_dataframe(dataset, filepath, ".csv")
     df.to_csv(filepath, **to_csv_kwargs)  # type: ignore
 
-    metadata_path = _dump_metadata(dataset, filepath)
+    metadata_path = _dump_metadata(dataset, filepath) if metadata else None
 
     return Path(filepath), metadata_path
 
@@ -45,8 +47,9 @@ def to_csv(
 def to_csv_collection(
     dataset: xr.Dataset,
     filepath: str | Path,
-    to_csv_kwargs: Dict[str, Any] | None = None,
-) -> tuple[tuple[Path, ...], Path]:
+    metadata: bool = True,
+    **kwargs: Any,
+) -> tuple[tuple[Path, ...], Path | None]:
     """Writes an xarray dataset to a collection of csv files.
 
     Output files are split such that each file contains the cartesian product of each
@@ -63,15 +66,16 @@ def to_csv_collection(
         filepath (str | Path): The base path for where to write the files. This should
             be the path to a file, not the path to a folder. This does not need to
             include a file extension; one will be added if not provided.
+        metadata (bool): If True, metadata from the xr.Dataset will be written to a
+            .json file next to the output file(s). Defaults to True.
         to_csv_kwargs (Dict[str, Any] | None, optional): Extra arguments to provide to
             pandas.DataFrame.to_csv() as keyword arguments. Defaults to None.
 
     Returns:
-        tuple[tuple[Path, ...], Path]: The paths to the written csv files and associated
-            metadata file.
+        tuple[tuple[Path, ...], Path | None]: The paths to the written csv files and
+            associated metadata file.
     """
-    if to_csv_kwargs is None:
-        to_csv_kwargs = {}
+    to_csv_kwargs = kwargs.get("to_csv_kwargs", {})
 
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
@@ -82,12 +86,6 @@ def to_csv_collection(
         df.to_csv(fpath, **to_csv_kwargs)
         filepaths.append(fpath)
 
-    metadata_path = _dump_metadata(dataset, filepath)
+    metadata_path = _dump_metadata(dataset, filepath) if metadata else None
 
     return tuple(filepaths), metadata_path
-
-
-def to_timestream_csv():
-    ...
-
-    # tuple(filepaths), metadata_path

@@ -4,3 +4,9 @@ source =
     ./src
 omit =
     ./env/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    pass
+    \.\.\.

@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 import logging
 import re
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Protocol, Tuple, Union
 
 import xarray as xr
+from typing_extensions import Annotated
 
 try:
     import tqdm
@@ -25,17 +24,20 @@ except ImportError:
 from .csv import to_csv, to_csv_collection
 from .parquet import to_parquet, to_parquet_collection
 
-ConvertMethod = Callable[
-    [
-        xr.Dataset,
-        Union[str, Path],
-        Optional[Dict[str, Any]],
-    ],
-    Tuple[Union[Tuple[Path, ...], Path], Path],
-]
+
+class Converter(Protocol):
+    def __call__(
+        self,
+        dataset: xr.Dataset,
+        filepath: Union[Path, str],
+        metadata: bool = False,
+        **kwargs: Optional[Any],
+    ) -> Tuple[Union[Tuple[Path, ...], Path], Optional[Path]]:
+        ...
+
 
 # Register to_* methods as options. For now this is a manual process
-AVAILABLE_METHODS: dict[str, ConvertMethod] = {
+AVAILABLE_METHODS: Dict[str, Converter] = {
     to_csv.__name__: to_csv,
     to_csv_collection.__name__: to_csv_collection,
     to_parquet.__name__: to_parquet,
@@ -67,27 +69,40 @@ app = typer.Typer(no_args_is_help=True)
 
 @app.command(no_args_is_help=True)
 def ncconvert(
-    method: str = typer.Argument(
-        ...,
-        help=f"How to convert the netCDF file(s). Options are: {_available_methods}",
-    ),
-    files: List[Path] = typer.Argument(
-        ...,
-        resolve_path=True,
-        dir_okay=False,
-        callback=_expand_paths,
-        help="The path to the netCDF files to convert.",
-    ),
-    output_dir: Path = typer.Option(
-        Path("./data"),
-        dir_okay=True,
-        file_okay=False,
-        help="The output dir where the converted file(s) should be saved.",
-    ),
-    verbose: bool = typer.Option(False, help="Run in verbose mode."),
+    method: Annotated[
+        str,
+        typer.Argument(
+            help=f"How to convert the netCDF file(s). Options are: {_available_methods}",
+        ),
+    ],
+    files: Annotated[
+        List[Path],
+        typer.Argument(
+            ...,
+            resolve_path=True,
+            dir_okay=False,
+            callback=_expand_paths,
+            help="The path to the netCDF files to convert.",
+        ),
+    ],
+    output_dir: Annotated[
+        Path,
+        typer.Option(
+            dir_okay=True,
+            file_okay=False,
+            help="The output dir where the converted file(s) should be saved.",
+        ),
+    ] = Path("./data"),
+    metadata: Annotated[
+        bool,
+        typer.Option(help="Write dataset metadata to a .json file"),
+    ] = True,
+    verbose: Annotated[
+        bool,
+        typer.Option(help="Run in verbose mode."),
+    ] = False,
 ):
     """Convert netCDF files to another format."""
-    
     convert_function = AVAILABLE_METHODS[method]
 
     file_iterator = tqdm.tqdm(files) if verbose else files
@@ -95,9 +110,14 @@ def ncconvert(
     for file in file_iterator:
         ds = xr.open_dataset(file)
         output_filepath = output_dir / file.name
-        output_data_files, metadata_file = convert_function(ds, output_filepath, None)
-        if verbose:
+        output_data_files, metadata_file = convert_function(
+            dataset=ds,
+            filepath=output_filepath,
+            metadata=metadata,
+        )
+        if verbose and output_data_files:
             typer.echo(f"Wrote data to {output_data_files}")
+        if verbose and metadata:
             typer.echo(f"Wrote metadata to {metadata_file}")
 
     if verbose:

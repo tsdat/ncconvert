@@ -12,7 +12,7 @@ description = "Convert netCDF to other formats."
 readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["netCDF", "cdf", "nc"]
-license = {text = "BSD 3-Clause License"}
+license = {file = "LICENSE.md"}
 classifiers = [
     "Programming Language :: Python :: 3",
 ]

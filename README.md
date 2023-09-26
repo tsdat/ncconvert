@@ -1,5 +1,7 @@
 # nc-convert
 
+[![main](https://github.com/tsdat/ncconvert/actions/workflows/pytest.yml/badge.svg)](https://github.com/tsdat/ncconvert/actions/workflows/pytest.yml)
+
 Convert netCDF files to other formats
 
 ## Usage

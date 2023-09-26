@@ -4,6 +4,8 @@ source =
     ./src
 omit =
     ./env/*
+    _version.py
+    __main__.py
 
 [report]
 exclude_lines =

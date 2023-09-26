@@ -70,26 +70,46 @@ def test_csv_collection(dataset: xr.Dataset):
         os.remove(output_path)
     os.remove(metadata_path)
 
-def test_faceted_csv(dataset: xr.Dataset):
+
+def test_faceted_csv(dataset: xr.Dataset, bad_dataset: xr.Dataset):
     from ncconvert.csv import to_faceted_dim_csv
 
     filepath = Path(".tmp/data/faceted.csv")
-
     output_path, metadata_path = to_faceted_dim_csv(dataset, filepath)
 
     assert output_path == filepath
     assert metadata_path is not None
     assert metadata_path == filepath.with_suffix(".json")
 
-    df = pd.read_csv(output_path)
-
-
     # cols=time, humidity, static, and [temperature, other]@each height
+    df = pd.read_csv(output_path)
     assert len(df.index) == len(dataset.time)
-    assert len(df.columns) == 2*len(dataset.height) + 3
+    assert len(df.columns) == 2 * len(dataset.height) + 3
 
+    # should preserve metadata just like the others
     meta = json.loads(metadata_path.read_text())
+    assert "datastream" in meta["attrs"]
+    assert "time" in meta["coords"]
 
+    os.remove(output_path)
+    os.remove(metadata_path)
+
+    # test with the bad dataset.
+    # We should see some warnings in the logs
+    filepath = Path(".tmp/data/bad_faceted.csv")
+    output_path, metadata_path = to_faceted_dim_csv(bad_dataset, filepath)
+
+    assert output_path == filepath
+    assert metadata_path is not None
+    assert metadata_path == filepath.with_suffix(".json")
+
+    # cols=time, time_var, [humidity]@each range, [other]@each height
+    df = pd.read_csv(output_path)
+    assert len(df.index) == len(bad_dataset.time)
+    assert len(df.columns) == 2 + len(bad_dataset.height) + len(bad_dataset.range)
+
+    # should preserve metadata just like the others
+    meta = json.loads(metadata_path.read_text())
     assert "datastream" in meta["attrs"]
     assert "time" in meta["coords"]
 

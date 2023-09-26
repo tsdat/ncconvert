@@ -22,8 +22,7 @@ def _dump_metadata(dataset: xr.Dataset, filepath: str | Path) -> Path:
 def _to_dataframe(
     dataset: xr.Dataset, filepath: str | Path, extension: str
 ) -> tuple[Path, pd.DataFrame]:
-    if not extension.startswith("."):
-        extension = "." + extension
+    extension = extension if extension.startswith(".") else "." + extension
 
     df = dataset.to_dataframe(dim_order=list(dataset.dims))
 
@@ -35,8 +34,7 @@ def _to_dataframe_collection(
 ) -> tuple[tuple[Path, pd.DataFrame], ...]:
     outputs: list[tuple[Path, pd.DataFrame]] = []
 
-    if extension.startswith("."):
-        extension = extension[1:]
+    extension = extension[1:] if extension.startswith(".") else extension
 
     # Get variable dimension groupings
     dimension_groups: dict[tuple[str, ...], list[str]] = defaultdict(list)
@@ -64,8 +62,7 @@ def _to_dataframe_collection(
 def _to_faceted_dim_dataframe(
     dataset: xr.Dataset, filepath: str | Path, extension: str
 ) -> tuple[Path, pd.DataFrame]:
-    if not extension.startswith("."):
-        extension = "." + extension
+    extension = extension if extension.startswith(".") else "." + extension
 
     # Get variable dimension groupings
     dimension_groups: dict[tuple[str, ...], list[str]] = defaultdict(list)
@@ -96,10 +93,10 @@ def _to_faceted_dim_dataframe(
     ds = dataset[["time"]].copy()
     for dims, var_list in dimension_groups.items():
         # simple case
-        if dims == ("time", ):
+        if dims == ("time",):
             ds.update(dataset[var_list])
             continue
-        
+
         shape = dataset[var_list[0]].shape
 
         # If scalar, expand to make time the first dimension
@@ -107,13 +104,13 @@ def _to_faceted_dim_dataframe(
             _tmp = dataset[var_list].expand_dims({"time": dataset["time"]})
             ds.update(_tmp[var_list])
             continue
-        
+
         _tmp = dataset[var_list]
 
         # If 1D, expand to make time a dimension (2D)
         if len(shape) == 1:
             _tmp = _tmp.expand_dims({"time": dataset["time"]})
-            
+
         # For 2D, make time the first dimension and flatten the second
         new_dims = ("time", [d for d in dims if d != "time"][0])
         _tmp = _tmp.transpose(*new_dims)
@@ -136,7 +133,7 @@ def _flatten_dataset(ds: xr.Dataset, second_dim: str) -> xr.Dataset:
     Returns:
         xr.Dataset: The flattened dataset. Preserves attributes.
     """
-    
+
     output = ds[["time"]]
 
     dim_values = ds[second_dim].values
@@ -144,7 +141,7 @@ def _flatten_dataset(ds: xr.Dataset, second_dim: str) -> xr.Dataset:
     dim_units = ds[second_dim].attrs.get("units")
     if not dim_units or dim_units == "1":
         dim_units = ""
-    
+
     dim_suffixes = [f"{dim_val}{dim_units}" for dim_val in dim_values]
 
     for var_name, data in ds.data_vars.items():

@@ -14,6 +14,7 @@ def test_vanilla_csv(dataset: xr.Dataset):
     output_path, metadata_path = to_csv(dataset, filepath)
 
     assert output_path == filepath
+    assert metadata_path is not None
     assert metadata_path == filepath.with_suffix(".json")
 
     df = pd.read_csv(output_path)
@@ -42,6 +43,7 @@ def test_csv_collection(dataset: xr.Dataset):
     assert filepath.with_suffix(".height.csv") in output_paths
     assert filepath.with_suffix(".time.csv") in output_paths
     assert filepath.with_suffix(".time.height.csv") in output_paths
+    assert metadata_path is not None
     assert metadata_path == filepath.with_suffix(".json")
 
     df = pd.read_csv(sorted(output_paths)[0])  # type: ignore
@@ -66,4 +68,30 @@ def test_csv_collection(dataset: xr.Dataset):
 
     for output_path in output_paths:
         os.remove(output_path)
+    os.remove(metadata_path)
+
+def test_faceted_csv(dataset: xr.Dataset):
+    from ncconvert.csv import to_faceted_dim_csv
+
+    filepath = Path(".tmp/data/faceted.csv")
+
+    output_path, metadata_path = to_faceted_dim_csv(dataset, filepath)
+
+    assert output_path == filepath
+    assert metadata_path is not None
+    assert metadata_path == filepath.with_suffix(".json")
+
+    df = pd.read_csv(output_path)
+
+
+    # cols=time, humidity, static, and [temperature, other]@each height
+    assert len(df.index) == len(dataset.time)
+    assert len(df.columns) == 2*len(dataset.height) + 3
+
+    meta = json.loads(metadata_path.read_text())
+
+    assert "datastream" in meta["attrs"]
+    assert "time" in meta["coords"]
+
+    os.remove(output_path)
     os.remove(metadata_path)

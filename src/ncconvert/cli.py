@@ -21,7 +21,7 @@ except ImportError:
     )
     sys.exit(1)
 
-from .csv import to_csv, to_csv_collection
+from .csv import to_csv, to_csv_collection, to_faceted_dim_csv
 from .parquet import to_parquet, to_parquet_collection
 
 
@@ -39,6 +39,7 @@ class Converter(Protocol):
 # Register to_* methods as options. For now this is a manual process
 AVAILABLE_METHODS: Dict[str, Converter] = {
     to_csv.__name__: to_csv,
+    to_faceted_dim_csv.__name__: to_faceted_dim_csv,
     to_csv_collection.__name__: to_csv_collection,
     to_parquet.__name__: to_parquet,
     to_parquet_collection.__name__: to_parquet_collection,

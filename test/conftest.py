@@ -19,7 +19,7 @@ def dataset() -> xr.Dataset:
             ),
             "height": (
                 "height",
-                [0.0, 10.0, 20.0, 30.0],
+                [0, 10, 20, 30],
                 {"units": "m", "long_name": "Height AGL"},
             ),
         },

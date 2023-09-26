@@ -5,7 +5,12 @@ from typing import Any
 
 import xarray as xr
 
-from .utils import _dump_metadata, _to_dataframe, _to_dataframe_collection
+from .utils import (
+    _dump_metadata,
+    _to_dataframe,
+    _to_dataframe_collection,
+    _to_faceted_dim_dataframe,
+)
 
 
 def to_csv(
@@ -89,3 +94,21 @@ def to_csv_collection(
     metadata_path = _dump_metadata(dataset, filepath) if metadata else None
 
     return tuple(filepaths), metadata_path
+
+
+def to_faceted_dim_csv(
+    dataset: xr.Dataset,
+    filepath: str | Path,
+    metadata: bool = True,
+    **kwargs: Any,
+) -> tuple[Path, Path | None]:
+    to_csv_kwargs = kwargs.get("to_csv_kwargs", {})
+
+    Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+
+    filepath, df = _to_faceted_dim_dataframe(dataset, filepath, ".csv")
+    df.to_csv(filepath, **to_csv_kwargs)  # type: ignore
+
+    metadata_path = _dump_metadata(dataset, filepath) if metadata else None
+
+    return Path(filepath), metadata_path
